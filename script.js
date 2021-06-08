@@ -1,54 +1,10 @@
-const receipts = [
-  {
-    customerId: 1,
-    list: [
-      { goodId: 1, amount: 2 },
-      { goodId: 2, amount: 1 },
-      { goodId: 3, amount: 5 },
-    ]
-  },
-  {
-    customerId: 2,
-    list: [
-      { goodId: 1, amount: 4 },
-      { goodId: 2, amount: 2 },
-    ]
-  },
-  {
-    customerId: 3,
-    list: [
-      { goodId: 1, amount: 3 },
-      { goodId: 2, amount: 10 },
-    ]
-  },
-  {
-    customerId: 1,
-    list: [
-      { goodId: 3, amount: 3 },
-    ]
-  },
-]
-
-const customers = [
-  { id: 1, name: 'Jon' },
-  { id: 2, name: 'Arya' },
-  { id: 3, name: 'Sansa' },
-]
-
-const goods = [
-  { id: 1, name: 'Beef', price: 7.99 },
-  { id: 2, name: 'Bread', price: 1.99 },
-  { id: 3, name: 'Beer', price: 3.99 },
-]
-
 // Imagine having information about recent supermarket visit of `customers` find out who spent the most
 // You are not allowed using: loops, if, else, switch, var or let statements
 
-
 function getPurchaseList(receipts, customerId) {
   return receipts
-  .filter(customer => customer.customerId === customerId)
-  .map(item => item.list)
+    .filter(customer => customer.customerId === customerId)
+    .map(item => item.list)
 }
 
 function convertToValues(list) {
@@ -77,32 +33,44 @@ function createCustomer(customerId) {
   }
 }
 
-function removeDuplicatesData(list, key) {
+function removeDuplicates(list, key = item => item.id) {
   return [
     ...new Map(
       list.map(item => [key(item), item])
-      ).values()
-    ]
-  }
-  
-  function sortCustomersBySpentTheMost(list) {
+    ).values()
+  ]
+}
+
+function sortBySpentTheMost(list) {
   return list.sort((a, b) => b.cost - a.cost)
 }
 
-function transformListIntoRequiredForm(list, key = item => item.id) {
-  const uniqueCustomersData =  removeDuplicatesData(list, key)
-  const sortedList = sortCustomersBySpentTheMost(uniqueCustomersData)
+function toFormatList(list) {
+  const getUniqueCustomers = removeDuplicates(list)
+  const sortedList = sortBySpentTheMost(getUniqueCustomers)
   return sortedList
 }
 
 function getCustomersList() {
-  return receipts.map(purchase => createCustomer(purchase.customerId))
+  const list = receipts.map(purchase => createCustomer(purchase.customerId))
+  const formattedList = toFormatList(list)
+  return formattedList
 }
 
 function getCustomerSpentTheMost() {
-  const isSpentTheMostCustomer = transformListIntoRequiredForm(getCustomersList())[0]
-  return isSpentTheMostCustomer?? '\nOops\nThere have been no customers yet'
+  const isCustomers = `${!!receipts.length}`
+  const CustomerSpentTheMost = {
+    'false': null,
+    'true': getCustomersList()[0]
+  }
+  return CustomerSpentTheMost[isCustomers]
 }
 
-console.log('Supermarket visiter \nthat has spent the most:\n',getCustomerSpentTheMost()); 
+function response() {
+  return {
+    customerSpentTheMost: getCustomerSpentTheMost(),
+    customers: getCustomersList()
+  }
+}
 
+console.log(response());
