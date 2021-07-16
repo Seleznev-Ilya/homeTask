@@ -1,76 +1,57 @@
 // Imagine having information about recent supermarket visit of `customers` find out who spent the most
 // You are not allowed using: loops, if, else, switch, var or let statements
 
-function getPurchaseList(receipts, customerId) {
-  return receipts
-    .filter(customer => customer.customerId === customerId)
+const concatPurchaseList = (list) => list.reduce((accumulator, currentItem) => accumulator.concat(currentItem))
+
+const getPurchaseList = (receiptsList, id) => {
+  const purchaseList = receiptsList
+    .filter(customer => customer.customerId === id)
     .map(item => item.list)
+  return concatPurchaseList(purchaseList)
 }
 
-function convertToValues(list) {
-  return list.map(purchase => {
-    const price = goods.find(good => good.id == purchase.goodId).price
-    return Number((price * purchase.amount).toFixed(2))
-  })
-}
+const convertToValues = (list) => list.map(purchase => {
+  const { price } = goods.find(good => good.id == purchase.goodId)
+  return Number((price * purchase.amount).toFixed(2))
+})
 
-function concatPurchaseList(list) {
-  return list.reduce((accumulator, currentItem) => accumulator.concat(currentItem))
-}
+const getCostSum = (list) => list.reduce((sum, current) => sum + current, 0)
 
-function getCostSum(list) {
-  return list.reduce((sum, current) => sum + current, 0)
-}
-
-function createCustomer(customerId) {
-  const purchasePriceList = getPurchaseList(receipts, customerId)
-  const convertedPriceList = convertToValues(concatPurchaseList(purchasePriceList))
-  const sumOfPriceList = getCostSum(convertedPriceList)
+const createCustomer = (list, id) => {
+  const convertedPriceList = convertToValues(getPurchaseList(list, id))
+  const cost = getCostSum(convertedPriceList)
+  const { name } = customers.find(name => name.id === id)
   return {
-    id: customerId,
-    name: customers.find(name => name.id === customerId).name,
-    cost: sumOfPriceList
+    id,
+    name,
+    cost,
   }
 }
 
-function removeDuplicates(list, key = item => item.id) {
-  return [
-    ...new Map(
-      list.map(item => [key(item), item])
-    ).values()
-  ]
+const removeDuplicates = (list, key = item => item.id) => [
+  ...new Map(list
+    .map(item => [key(item), item]))
+    .values()
+]
+
+const sortBySpentTheMost = list => list.sort((a, b) => b.cost - a.cost)
+
+const convertToFormatList = list => sortBySpentTheMost(removeDuplicates(list))
+
+const getCustomersList = list => {
+  const receiptsList = list.map(purchase => createCustomer(list, purchase.customerId))
+  return convertToFormatList(receiptsList)
 }
 
-function sortBySpentTheMost(list) {
-  return list.sort((a, b) => b.cost - a.cost)
-}
+const getCustomerSpentTheMost = list => list?.length ? list[0] : null
 
-function toFormatList(list) {
-  const getUniqueCustomers = removeDuplicates(list)
-  const sortedList = sortBySpentTheMost(getUniqueCustomers)
-  return sortedList
-}
-
-function getCustomersList() {
-  const list = receipts.map(purchase => createCustomer(purchase.customerId))
-  const formattedList = toFormatList(list)
-  return formattedList
-}
-
-function getCustomerSpentTheMost() {
-  const isCustomers = `${!!receipts.length}`
-  const CustomerSpentTheMost = {
-    'false': null,
-    'true': getCustomersList()[0]
-  }
-  return CustomerSpentTheMost[isCustomers]
-}
-
-function response() {
+const response = (receiptsList = []) => {
+  const customers = getCustomersList(receiptsList)
+  const customerSpentTheMost = getCustomerSpentTheMost(customers)
   return {
-    customerSpentTheMost: getCustomerSpentTheMost(),
-    customers: getCustomersList()
+    customers,
+    customerSpentTheMost,
   }
 }
 
-console.log(response());
+console.log(response(receipts));
